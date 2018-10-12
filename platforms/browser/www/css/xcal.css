@@ -1,0 +1,323 @@
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  position: relative;
+  min-height: 98%;
+  background-color: #272b30;
+  color: #c8c8c8;
+}
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+  font-family: "Arial", sans-serif;
+  font-size: 1.05rem;
+}
+
+section div { /* this fixes the additional height added to "inline-block" divs when used with overflow:hidden */
+  vertical-align: top; 
+}
+
+#page {
+  width: 100%;
+  height: 98%;
+  position: absolute;
+}
+
+/* DOM styling and overwriting jQuery ui buttons --------------------------------------------------------- */
+button, .ui-button {
+  background-color: #2E3338; /* used below in @media too! */
+  border: 1px solid #1c1e22;
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+}
+button:hover, button:active, .ui-button:hover, .ui-button:active, .ui-button:focus, .ui-menu.ui-widget-content .ui-state-active {
+  background-color: #1c1e22;
+  color: #fff;
+  border: 1px solid #1c1e22;
+}
+.toaster button {
+  padding: 2px 4px;
+  margin-left: 0.5rem;
+}
+.toaster {
+  background: rgba(85,85,85,0.3);
+}
+
+.ui-button .ui-icon,
+.ui-icon,
+.ui-widget-content .ui-icon,
+.ui-widget-header .ui-icon {
+  background-image: url(../img/ui-icons_c8c8c8_256x240.png);
+}
+.ui-menu.ui-widget-content {
+  background-color: #2E3338;
+  border: 1px solid #1c1e22;
+  color: #fff;
+  cursor: pointer;
+}
+.ui-menu .ui-icon.ui-icon-blank, .ui-menu .ui-state-active .ui-icon.ui-icon-blank {
+  display: none; /* don't diplay UI menu icon "blank" */
+}
+.ui-state-hover .ui-icon,
+.ui-state-focus .ui-icon,
+.ui-button:hover .ui-icon,
+.ui-button:focus .ui-icon,
+.ui-state-active .ui-icon,
+.ui-button:active .ui-icon {
+  background-image: url(../img/ui-icons_ffffff_256x240.png);
+}
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default, .ui-button, html .ui-button.ui-state-disabled:hover, html .ui-button.ui-state-disabled:active {
+  /*background: #2E3338 url(images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x;*/
+  background-image: none;
+}
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus, .ui-button:hover, .ui-button:focus, .ui-widget-header {
+  /*background: #1c1e22 url(images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;*/
+  /*background: #cccccc url("images/ui-bg_highlight-soft_75_cccccc_1x100.png") 50% 50% repeat-x;*/
+  background-image: none;
+}
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+  background: #000;
+  color: #c8c8c8;
+}
+input:focus, button:focus, .ui-button:focus {
+  outline: #d3d3d3;
+}
+table {
+  border-spacing: 0;
+}
+
+/* calendar styles --------------------------------------------------------------------------------------- */
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.95rem;		/* use for #cal top */
+}
+#appTitle {
+  display: inline-block;
+  margin: 0 auto;
+}
+header h2 {
+  margin-top: 0.33rem;		/* use for #cal top */
+  margin-bottom: 0.35rem;	/* use for #cal top */
+  display: inline-block;
+}
+#scoreIcn {
+  height: 1.33rem; /* less than line-height of header */
+  top: 0.55rem;
+  padding-left: 0.6rem;
+  cursor: pointer;
+}
+.flLeft {
+  float: left;
+}
+.flRight {
+  float: right;
+}
+#menu.ui-menu .ui-menu-item-wrapper {
+  text-align: left;
+}
+footer {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+}
+#cal {
+  position: absolute;
+  height: calc(100% - 5rem);
+  top: 2.63rem;			 	/* same as header line-height + h2 margin */
+  left: 0;
+  right: 0;
+  margin-top: 0.15rem;
+}
+#cal div:not(.inner) {
+  display: inline-block;
+  border: 1px solid #1c1e22;
+  width: 13.5%;
+  overflow: hidden;
+}
+#cal div.week {
+  width: 5.5%;
+  text-align: center;
+  background-color: #2E3338;
+  /*float: left; NOT NEEDED/WRONG this will cause line-break at each week div */
+}
+.headings {
+  line-height: 2rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  background-color: #2E3338;
+  vertical-align: bottom;  /* this fixes the additional height added to "inline-block" divs when used with overflow:hidden */
+}
+.days {
+  font-size: 1.05rem;
+  text-align: right;
+  padding: 0.25rem 0.5rem;
+}
+.days.inactive {
+  color: #4d4d4d;
+}
+.today, .days.today {
+  color: #ffff66;
+  font-weight: bold;
+}
+.bestMonth {
+  color: #ccffcc;
+}
+.inner {
+  float: left;
+  text-align: left;
+  color: #c8c8c8;
+  margin-top: 0.95rem;
+  font-style: italic;
+  font-weight: normal;
+  max-width: 94%;
+}
+.myX, .smallX {
+  /*
+  Original SVG, decoded:
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.1" preserveAspectRatio="none" viewBox="0 0 100 100"><path d="M100 0 L0 100 " stroke="#ff9999" stroke-width="3"/><path d="M0 0 L100 100 " stroke="#ff9999" stroke-width="3"/></svg>
+  Below SVG (after "charset=utf8,") is URL encoded (using https://meyerweb.com/eric/tools/dencoder/) for simpler browsers (such as IE)
+  */
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20preserveAspectRatio%3D%22none%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M100%200%20L0%20100%20%22%20stroke%3D%22%23ff9999%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M0%200%20L100%20100%20%22%20stroke%3D%22%23ff9999%22%20stroke-width%3D%223%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat:no-repeat;
+  background-position:center center;
+}
+.myX {
+  background-size: 75% 75%, auto;
+}
+.smallX {
+  background-size: 40% 40%, auto;
+}
+.xCol {
+  color: #ff9999;
+}
+
+.fu_popover_default {
+  background: #394046 !important;
+}
+.arrow_top_default:after {
+  border-bottom-color:  #394046 !important;
+}
+.score th, .score td {
+  text-align: right;
+}
+.score td + td, .score th + th {
+  text-align: right;
+  padding-left: 1.5rem;
+}
+.score .divider td {
+  border-top: 1px #c8c8c8 solid;
+}
+
+.dataFormat {
+  font-family: "Consolas", serif;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+#diaExIn input[type="radio"] {
+  margin-right: 6px;
+}
+#diaExIn input[type="radio"] + label{
+  margin-right: 30px;
+}
+#diaExIn p {
+  margin-bottom: 0.2em;
+}
+
+.toaster .alert-danger, .toaster .alert-warning {
+  color: #ffcc00;
+}
+
+.pop-title {
+  position: absolute;
+  background: #f7f7f7;
+  white-space: nowrap;
+}
+
+/* overwriting jQuery ui styles -------------------------------------------------------------------------- */
+.ui-contextmenu .ui-menu-item, .ui-menu .ui-menu-item, .ui-menu-icons .ui-menu-item, .ui-widget .ui-widget { /**/
+  font-size: 1rem;
+}
+[aria-describedby=diaCom].ui-dialog .ui-dialog-titlebar {
+  display: none;
+}
+.ui-dialog-titlebar-close {
+  display: none;
+}
+.ui-dialog-titlebar {
+  background: #000;
+  color: #fff;
+  border: none;
+}
+.ui-dialog .ui-dialog-buttonpane {
+  margin-top: 0;
+  padding: 0.2rem;
+  border: 0;
+}
+.ui-dialog .ui-dialog-buttonpane button {
+  margin: 0 0 0 0.2rem;
+}
+.ui-dialog .ui-dialog-content {
+  padding-right: 0.2rem;
+}
+.ui-widget.ui-widget-content {
+  border-color: #1c1e22;
+}
+.ui-widget-content {
+  background: #394046;
+  color: #c8c8c8;
+}
+.ui-widget textarea {
+  font-size: 0.85rem;
+}
+#exinHelp {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+#diaConfirm .ui-icon {
+  float:left; 
+  margin:3px 12px 29px 0;
+}
+
+/* media styling ----------------------------------------------------------------------------------------- */
+@media screen and (max-width: 1040px) { /* smartphones and tablets */
+  .inner {
+    margin-top: 0;
+	font-size: 0.96rem;
+  }
+  #cal {
+	height: calc(100% - 7rem);
+  }
+  #diaConfirm .ui-icon {
+	margin-bottom: 38px;
+  }
+}
+@media screen and (max-width: 680px) { /* smartphones */
+  .inner {
+    margin-top: -22px;
+	font-size: 0.76rem;
+  }
+}
+@media only screen  
+and (max-device-width : 1024px) {
+    button:hover, .ui-button:hover {
+         /* cancel all hover styles applied for desktop */ 
+		 background-color: #2E3338;
+    }
+}
