@@ -433,7 +433,7 @@ function initXData() {
  * @param {Function} callback: default false
  */
 function fetchXData(month, callback) {
-  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + dToday.getMonth()+1;
+  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth()+1);
   callback = typeof callback === 'function' ? callback : false;
   
   // IndexedDB: check if DB was successfully loaded
@@ -476,7 +476,7 @@ function fetchXData(month, callback) {
 }/*
 // SQLite
 function fetchXData(month, where, data, callback) {
-  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + dToday.getMonth()+1;
+  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth()+1);
   where = typeof where === 'string' ? where : '';
   data = typeof data !== 'undefined' ? data : new Array();
   callback = typeof callback === 'function' ? callback : false;
