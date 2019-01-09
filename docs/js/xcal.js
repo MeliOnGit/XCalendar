@@ -433,7 +433,7 @@ function initXData() {
  * @param {Function} callback: default false
  */
 function fetchXData(month, callback) {
-  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth()+1);
+  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth2Digit());
   callback = typeof callback === 'function' ? callback : false;
   
   // IndexedDB: check if DB was successfully loaded
@@ -714,7 +714,7 @@ function deleteTable(drop) {
 /**
  * Count scores
  * @param {function} callback 
- * @param {String} what 
+ * @param {String} what - name of one property of score object to be returned
  * @return {Object|Number} scores
  */
 function scoreCount(callback, what) {
@@ -726,10 +726,12 @@ function scoreCount(callback, what) {
 	'sxTot'    : 0,
 	'monXTot'  : 0,
 	'monSXTot' : 0,
-	'xsSpree'  : 0,  // any X
+	'xsSpree'  : 0,  // any X sprees
 	'xsSprMon' : '',
-	'xSpree'   : 0,  // only big X
+	'xSpree'   : 0,  // only big X sprees
 	'xSprMon'  : '',
+	'cxsSpree' : 0,  // CURRENT (needs to end TODAY) any X spree
+	'cxSpree'  : 0,  // CURRENT (needs to end TODAY) only big X spree
 	'bestMon'  : '', // best month as "value" in format YYYYMM
 	'bestMonT' : '', // best month's description
 	'bestMonS' : 0.0 // best month's score
@@ -753,7 +755,7 @@ function scoreCount(callback, what) {
 		// check if month swapped
 		checkBestMonth(bestMon, cursor.value.xMonth);
 		
-		// count scores
+		// count scores -------------------------------------------------------
 		if(cursor.value.myX) {
 		  score.allTot++;        // total score: 1 for X, 0.5 for small X
 		  score.xTot++;          // amount of Xs
@@ -779,10 +781,11 @@ function scoreCount(callback, what) {
 		  }
 		}
 		
-		// check for "X spree" - how many X are adjacent dates
+		// check for "X spree" - how many X are adjacent dates ----------------
 		if(cursor.value.myX || cursor.value.smallX) {
 		  if(dateBefore === 0) {
-			spreeTemp = 1;    // first "any" X
+			// first "any" X
+			spreeTemp = 1; // we count Xs, not scores so we don't need to check for small X
 			if(cursor.value.myX)
 			  spreeTempX = 1; // first big X
 		  }
@@ -833,12 +836,22 @@ function scoreCount(callback, what) {
 		  else
 			spreeTempX = 0; // restart big X spree because smallX doesn't count
 		}
-		dateBefore = parseInt( cursor.value.xDate );
+		
+		// NEXT ENTRY ---------------------------------------------------------
+		dateBefore = parseInt( cursor.value.xDate ); // set dateBefore as current date, for next db entry comparison
 		cursor.continue();
     }
 	
     else {
-      // check if last counted sprees are the highest
+	  // set current sprees, if applicable (last counted sprees end today)
+	  if(dateBefore > 0) {
+		var todayInt = parseInt( ''+ dToday.getFullYear() + dToday.getMonth2Digit() + dToday.getDate2Digit() );
+		if(dateBefore == todayInt) {
+		  score.cxsSpree = spreeTemp;  // need to use Temp vars as those have the last counts
+		  score.cxSpree  = spreeTempX;
+		}			
+	  }
+	  // check if last counted sprees are the highest
 	  if(score.xsSpree <= spreeTemp) {
 		score.xsSpree  = spreeTemp;
 		if(dateBefore > 0)
@@ -1325,15 +1338,17 @@ function displayScorePopover(score) {
   cont += '<table class="score">';
   cont += '<tr><td>Total Score</td><td>'+ score.allTot +'</td></tr>';
   cont += '<tr><td>Total <span class="xCol">X</span>s</td><td>'+ score.xTot +'</td></tr>';
-  cont += '<tr><td>Total small <span class="xCol">X</span>s</td><td>'+ score.sxTot +'</td></tr>';
+  cont += '<tr><td>Total small <span class="xCol">x</span>s</td><td>'+ score.sxTot +'</td></tr>';
   cont += '<tr class="divider"><td>Month Score</td><td>'+ score.monTot +'</td></tr>';
   cont += '<tr><td>Month <span class="xCol">X</span>s</td><td>'+ score.monXTot +'</td></tr>';
-  cont += '<tr><td>Month small <span class="xCol">X</span>s</td><td>'+ score.monSXTot +'</td></tr>';
+  cont += '<tr><td>Month small <span class="xCol">x</span>s</td><td>'+ score.monSXTot +'</td></tr>';
   if(score.bestMon == $('#currmon').attr('data-currmon'))
 	cls = 'today';
-  cont += '<tr><td>Best Month</td><td title="Score: '+ score.bestMonS +'"><span class="'+ cls +'">'+ score.bestMonT +'</span></td></tr>';
+  cont += '<tr><td>Best Month</td><td><span class="'+ cls +'">'+ score.bestMonT +'</span></br><span class="bestMonth">( '+ score.bestMonS +' )</span></td></tr>';
   cont += '<tr class="divider"><td>Longest <span class="xCol">Xx</span> spree</td><td title="'+ score.xsSprMon +'">'+ score.xsSpree +'</td></tr>';
   cont += '<tr><td>Longest <span class="xCol">X</span> spree</td><td title="'+ score.xSprMon +'">'+ score.xSpree +'</td></tr>';
+  cont += '<td>Current <span class="xCol">Xx</span> spree</td><td>'+ score.cxsSpree +'</td></tr>';
+  cont += '<tr><td>Current <span class="xCol">X</span> spree</td><td>'+ score.cxSpree +'</td></tr>';
   cont += '</table>';
   // update score popover
   $('#scoreIcn').fu_popover('updContent',cont);
