@@ -45,7 +45,7 @@ $(document).ready(function() {
 		document.addEventListener("deviceready", onReady, false);
 	else //...if not, then we don't use Cordova and no need to wait for it
 	*/
-		onReady();
+	onReady();
 }); 
 
 /**
@@ -414,17 +414,6 @@ function initXData() {
     console.log(event);
 	$.toaster("An error occurred while initializing the database", '', 'danger');
   };
-  
-  // SQLite / WebSQL Database
-  /*db = window.openDatabase("xcal", "1.0", "XCal DB", 0);
-  db.transaction(function(tx) {
-	tx.executeSql("CREATE TABLE IF NOT EXISTS xcal (xDate TEXT primary key, myX TEXT NOT NULL CHECK (myX IN ('TRUE','FALSE')), smallX TEXT NOT NULL CHECK (myX IN ('TRUE','FALSE')), xMonth TEXT NOT NULL, xComment TEXT)", [], function(tx, result) { // would be overkill :P CHECK (xMonth REGEX '^(\d{4})(1[0-2]|0[1-9])$')
-	  fetchXData(); // get today's month's data
-	});
-  }, function(err){
-	console.log(err);
-	$.toaster("An error occurred while initializing the database", '', 'danger');
-  });*/
 }
 
 /**
@@ -473,51 +462,7 @@ function fetchXData(month, callback) {
         callback();
 	}
   };
-}/*
-// SQLite
-function fetchXData(month, where, data, callback) {
-  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth()+1);
-  where = typeof where === 'string' ? where : '';
-  data = typeof data !== 'undefined' ? data : new Array();
-  callback = typeof callback === 'function' ? callback : false;
-  var sel = "SELECT * FROM xcal WHERE ";
-  
-  // set where clause and data for where
-  if(where != '') {
-    sel += where; 
-	// if where clause is sent as string, data needs to be sent in data parameter 
-	if(data.length <= 0)
-      return false;
-  } else if(month.length == 6) {
-	// check if month reading is needed
-	if(xData.getByPropValue('xMonth', month, true) !== false) { //console.log("already read");
-	  addXMonthToCal(month);
-	  return true; // no reading needed
-	}
-	sel += " month = ?";
-	data = [ month ]; // set month as data for where
-  } else
-    return false; // don't allow to read without where clause
-  
-  // read from DB
-  db.transaction(function(tx) {
-    tx.executeSql("SELECT * FROM xcal WHERE xMonth = ?", data, function(tx,result) {
-      for(var i=0; i < result.rows.length; i++) { //console.log(result.rows.item(i));
-        // set result
-		var x = $.extend({}, xTemp);
-        x.xDate    = result.rows.item(i).xDate;
-        x.myX      = result.rows.item(i).myX == "TRUE" ? true : false;
-        x.smallX   = result.rows.item(i).smallX == "TRUE" ? true : false;
-		x.xMonth   = result.rows.item(i).xMonth;
-		x.xComment = result.rows.item(i).xComment;
-        xData.push(x);
-		addXToCal(x);
-      }
-	  if(callback !== false)
-        callback();
-    });
-  });
-}*/
+}
 
 /**
  * Save into table 
@@ -583,62 +528,6 @@ function saveXData(x,mode) {
 	  xData.splice(xIdx, 1); 
     };
   }
- /*
-  // SQLite
-  if(mode == 'ins') {
-	// set array of data for ? placeholder in correct order
-	var data = [
-	  x.xDate,
-	  x.myX === true ? "TRUE" : "FALSE",
-	  x.smallX === true ? "TRUE" : "FALSE",
-	  x.xMonth,
-	  x.xComment
-	];
-	// insert data to DB
-    db.transaction(function(tx) {
-	  tx.executeSql("INSERT INTO xcal (xDate, myX, smallX, xMonth, xComment) VALUES (?,?,?,?,?)", data, function(tx,res) {
-	    alert("Saved");    
-	  });
-    }, function(err){
-	  console.log(err);
-	  alert("An error occured while saving");
-    });
-	
-  } else if(mode == 'upd') {
-	// set array of data for ? placeholder in correct order
-	var data = [
-	  x.myX === true ? "TRUE" : "FALSE",
-	  x.smallX === true ? "TRUE" : "FALSE",
-	  x.xComment,
-	  x.xDate
-	];
-	// update to DB
-	db.transaction(function(tx) {
-	  tx.executeSql("UPDATE xcal SET myX = ?, smallX = ?, xComment = ? WHERE xDate = ?", data, function(tx,res) {
-	    alert("Updated");    
-	  });
-    }, function(err){
-	  console.log(err);
-	  alert("An error occured while deleting");
-    });
-	
-  } else if(mode == 'del') {
-	// set array of data for ? placeholder in correct order
-	var data = [
-	  x.xDate
-	];
-	// delete from DB
-	db.transaction(function(tx) {
-	  tx.executeSql("DELETE FROM xcal WHERE xDate = ?", data, function(tx,res) {
-	    // remove from X-Data array
-	    xData.splice(x, 1); 
-		alert("Deleted");    
-	  });
-    }, function(err){
-	  console.log(err);
-	  alert("An error occured while deleting");
-    });
-  }*/
 }
 
 /**
@@ -686,29 +575,6 @@ function deleteTable(drop) {
 	  $.toaster("All data deleted successfully");
     };
   }
-  
-  // SQLite
-  /*
-  if(drop)
-    var sql = "DROP TABLE IF EXISTS xcal";
-  else
-	var sql = "DELETE FROM xcal";
-  
-  db.transaction(function(tx) {
-	tx.executeSql(sql, [], function(tx, result) {
-	  $('section div.days').removeClass('myX');
-	  $('section div.days').removeClass('smallX');
-	  $('section div.days').children('div.inner').remove();
-	  // reset X-Data array
-      xData = [];
-	  //
-	  if(drop)
-	    alert("Table deleted! Please refresh page to reinitialize DB and table!");
-	});
-  }, function(err){
-	console.log(err);
-	alert("An error occurred while deleting the table");
-  });*/
 }
 
 /**
@@ -745,11 +611,15 @@ function scoreCount(callback, what) {
   // IndexedDB: check if DB was successfully loaded
   if(db === null)
      return false;
+  
+  // read from DB...
   var tx = db.transaction(["xcal"]);
-  var objectStore = tx.objectStore("xcal");
+  var objectStore = tx.objectStore("xcal"); var aResult = [];
+  //var index = objectStore.index("xDate"); // instead of reading directly from store, sort via index
+  //index.openCursor().onsuccess = function(event) {
   objectStore.openCursor().onsuccess = function(event) {
-    var cursor = event.target.result;
-    if(cursor) {
+    var cursor = event.target.result; 
+    if(cursor) { aResult.push(cursor.value.xDate);
 		var resetSpr = false;
 		
 		// check if month swapped
@@ -790,16 +660,18 @@ function scoreCount(callback, what) {
 			  spreeTempX = 1; // first big X
 		  }
 		  else {
-		    var year = parseInt( cursor.value.xDate.substr(0,4) );
+			var year = parseInt( cursor.value.xDate.substr(0,4) );
 			var mon  = parseInt( cursor.value.xDate.substr(4,2) );
 			var day  = parseInt( cursor.value.xDate.substr(6,2) );
 			// subtract 1 day from current date to check with dateBefore
 			if(day == 1) {
-			  var dPrev = getLastDayPrevMonth(year,mon-1); // date object has month 0 = Jan etc.
-			  day = dPrev.getDate();
-			}
-			else
+			  var dPrev = getLastDayPrevMonth(year,mon-1);
+			  day =  dPrev.getDate();
+			  mon =  dPrev.getMonth() + 1; // jan is 0 so we need to +1
+			  year = dPrev.getFullYear();
+			} else {
 			  day--;
+			}
 		    var dateNow = parseInt( ''+year+numbXDigit(mon)+numbXDigit(day) );
 			// check if dates are adjacent
 			if(dateNow == dateBefore) {
@@ -814,27 +686,32 @@ function scoreCount(callback, what) {
 				}
 			    spreeTempX = 0;
 			  }
-			}
-		    else
+			} else {
 			  resetSpr = true; // dates are no longer adjacent -> reset
+			}
 		  }
-		}
-		else
+		} else {
 		  resetSpr = true; // comment only and no X -> reset
+		}
+		
+		// spree reset and check with longest spree
 	    if(resetSpr) {
-		  if(score.xsSpree <= spreeTemp) {
-			score.xsSpree  = spreeTemp;
-			score.xsSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
-		  }
-		  if(score.xSpree <= spreeTempX) {
-			score.xSpree = spreeTempX;
-			score.xSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
-		  }
-		  spreeTemp = 1;  // restart "any" X spree with first X
-		  if(cursor.value.myX)
-			spreeTempX = 1; // restart big X spree with first X
-		  else
-			spreeTempX = 0; // restart big X spree because smallX doesn't count
+			// check/set longest spree
+			if(score.xsSpree <= spreeTemp) {
+				score.xsSpree  = spreeTemp;
+				score.xsSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
+			}
+			if(score.xSpree <= spreeTempX) {
+				score.xSpree = spreeTempX;
+				score.xSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
+			}
+			// reset current/new spree
+			spreeTemp = spreeTempX = 0;
+			// start new spree if current date has an X
+			if(cursor.value.myX || cursor.value.smallX)
+				spreeTemp = 1;  // restart "any" X spree with first X
+			if(cursor.value.myX)
+				spreeTempX = 1; // restart big X spree with first X
 		}
 		
 		// NEXT ENTRY ---------------------------------------------------------
@@ -842,6 +719,7 @@ function scoreCount(callback, what) {
 		cursor.continue();
     }
 	
+	//...reading done - set score -------------------------------------------------------------------------------------
     else {
 	  // set current sprees, if applicable (last counted sprees end today)
 	  if(dateBefore > 0) {
@@ -881,93 +759,36 @@ function scoreCount(callback, what) {
 	  }
     }
   };
-  
-  // SQLite: read from DB
-  /*
-  db.transaction(function(tx) {
-    tx.executeSql("SELECT * FROM xcal ORDER BY xDate ASC", [], function(tx,result) {
-      for(var i=0; i < result.rows.length; i++) { //console.log(result.rows.item(i));
-        var myX    = false;
-	    var smallX = false;
-		// count scores
-		if(result.rows.item(i).myX == "TRUE") {
-		  score.allTot++;        // total score: 1 for X, 0.5 for small X
-		  score.xTot++;          // amount of Xs
-		  if(result.rows.item(i).xMonth == month) {
-		    score.monTot++;      // month score..
-			score.monXTot++;     // amount of month's Xs
-		  }
-		  myX = true;
-		}
-	    else if(result.rows.item(i).smallX == "TRUE") {
-		  score.allTot += 0.5;   // total score: 1 for X, 0.5 for small X
-		  score.sxTot++;         // amount of small Xs
-		  if(result.rows.item(i).xMonth == month) {
-		    score.monTot += 0.5; // month score..
-			score.monSXTot++;    // amount of month's small Xs
-		  }
-		  smallX = true;
-		}
-		// check for "X spree" - how many X are adjacent dates
-		if(myX || smallX) {
-		  if(dateBefore == 0) {
-			spreeTemp = 1;    // first "any" X
-			if(myX)
-			  spreeTempX = 1; // first big X
-		  }
-		  else {
-		    var year = parseInt( result.rows.item(i).xDate.substr(0,4) );
-			var mon  = parseInt( result.rows.item(i).xDate.substr(4,2) );
-			var day  = parseInt( result.rows.item(i).xDate.substr(6,2) );
-			// subtract 1 day from current date to check with dateBefore
-			if(day == 1) {
-			  var dPrev = getLastDayPrevMonth(year,mon-1); // date object has month 0 = Jan etc.
-			  day = dPrev.getDate();
-			}
-			else
-			  day--;
-		    var dateNow = parseInt( ''+year+numbXDigit(mon)+numbXDigit(day) );
-			// check if dates are adjacent
-			if(dateNow == dateBefore) {
-			  spreeTemp++;    // increase "any" X spree
-			  if(myX)
-			    spreeTempX++; // increase big X spree
-			  else if(spreeTempX > 0) {
-				// restart big X spree because smallX doesn't count
-				if(score.xSpree <= spreeTempX) {
-				  score.xSpree  = spreeTempX;
-				  score.xSprMon = months[mon-1].name +" "+ year;
-				}
-			    spreeTempX = 0;
-			  }
-			}
-		    else {
-			  if(score.xsSpree <= spreeTemp) {
-				score.xsSpree  = spreeTemp;
-				score.xsSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
-			  }
-			  if(score.xSpree <= spreeTempX) {
-				score.xSpree = spreeTempX;
-				score.xSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
-			  }
-			  spreeTemp = 1;  // restart "any" X spree with first X
-			  spreeTempX = 1; // restart big X spree with first X
-			}
-		  }
-		}
-		dateBefore = parseInt( result.rows.item(i).xDate );
-      }
-	  // return certain score or score object
-	  if(what == '')
-		callback(score);
-	  else { 
-		if(score.hasOwnProperty(what))
-		  callback(score[what]);
-		else
-		  callback(0);
-	  }
-    });
-  });*/
+}
+
+/**
+ * Best month score checks
+ * @param {Object} bestMon 
+ * @param {String} month
+ */
+function checkBestMonth(bestMon, month) {
+  if(bestMon.tmpMon == month) {
+	 return; // month didn't swap
+  }
+  // month swapped: check if temporary month is the new best one
+  if(bestMon.tmpMon !== '') {
+	if( ( bestMon.totScore < bestMon.tmpScore ) ||
+	    ( bestMon.totScore == bestMon.tmpScore && bestMon.totX < bestMon.tmpX ) ||
+	    ( bestMon.totScore == bestMon.tmpScore && bestMon.totX == bestMon.tmpX && bestMon.totSX <= bestMon.tmpSX )  
+	  ) {
+	  // the current temporary score is higher than the last best month -> set new best month
+	  bestMon.month    = bestMon.tmpMon;
+	  bestMon.totScore = bestMon.tmpScore;
+	  bestMon.totX     = bestMon.tmpX;
+	  bestMon.totSX    = bestMon.tmpSX;
+	}
+	// reset counting for new month
+	bestMon.tmpScore = 0.0;
+	bestMon.tmpX = bestMon.tmpSX = 0;
+	bestMon.tmpMon = month; // set new month counting for 
+  }
+  else 
+	bestMon.tmpMon = month; // first month - keep counting...
 }
 
 /**
@@ -1353,36 +1174,6 @@ function displayScorePopover(score) {
   // update score popover
   $('#scoreIcn').fu_popover('updContent',cont);
   $('#scoreIcn').fu_popover('show');
-}
-
-/**
- * Best month score checks
- * @param {Object} bestMon 
- * @param {String} month
- */
-function checkBestMonth(bestMon, month) {
-  if(bestMon.tmpMon == month) {
-	 return; // month didn't swap
-  }
-  // month swapped: check if temporary month is the new best one
-  if(bestMon.tmpMon !== '') {
-	if( ( bestMon.totScore < bestMon.tmpScore ) ||
-	    ( bestMon.totScore == bestMon.tmpScore && bestMon.totX < bestMon.tmpX ) ||
-	    ( bestMon.totScore == bestMon.tmpScore && bestMon.totX == bestMon.tmpX && bestMon.totSX <= bestMon.tmpSX )  
-	  ) {
-	  // the current temporary score is higher than the last best month -> set new best month
-	  bestMon.month    = bestMon.tmpMon;
-	  bestMon.totScore = bestMon.tmpScore;
-	  bestMon.totX     = bestMon.tmpX;
-	  bestMon.totSX    = bestMon.tmpSX;
-	}
-	// reset counting for new month
-	bestMon.tmpScore = 0.0;
-	bestMon.tmpX = bestMon.tmpSX = 0;
-	bestMon.tmpMon = month; // set new month counting for 
-  }
-  else 
-	bestMon.tmpMon = month; // first month - keep counting...
 }
 
 /**
@@ -1794,3 +1585,233 @@ function buildCal(dCalDate) {
     o.click();
   }
 }
+  
+  // SQLite / WebSQL Database
+  /*db = window.openDatabase("xcal", "1.0", "XCal DB", 0);
+  db.transaction(function(tx) {
+	tx.executeSql("CREATE TABLE IF NOT EXISTS xcal (
+		xDate TEXT primary key, 
+		myX TEXT NOT NULL CHECK (myX IN ('TRUE','FALSE')), 
+		smallX TEXT NOT NULL CHECK (myX IN ('TRUE','FALSE')), 
+		xMonth TEXT NOT NULL, 
+		xComment TEXT)", 
+		[], function(tx, result) { // would be overkill :P CHECK (xMonth REGEX '^(\d{4})(1[0-2]|0[1-9])$')
+	  fetchXData(); // get today's month's data
+	});
+  }, function(err){
+	console.log(err);
+	$.toaster("An error occurred while initializing the database", '', 'danger');
+  });*/
+  
+/*
+// SQLite
+function fetchXData(month, where, data, callback) {
+  month = typeof month === 'string' ? month : ''+ dToday.getFullYear() + (dToday.getMonth()+1);
+  where = typeof where === 'string' ? where : '';
+  data = typeof data !== 'undefined' ? data : new Array();
+  callback = typeof callback === 'function' ? callback : false;
+  var sel = "SELECT * FROM xcal WHERE ";
+  
+  // set where clause and data for where
+  if(where != '') {
+    sel += where; 
+	// if where clause is sent as string, data needs to be sent in data parameter 
+	if(data.length <= 0)
+      return false;
+  } else if(month.length == 6) {
+	// check if month reading is needed
+	if(xData.getByPropValue('xMonth', month, true) !== false) { //console.log("already read");
+	  addXMonthToCal(month);
+	  return true; // no reading needed
+	}
+	sel += " month = ?";
+	data = [ month ]; // set month as data for where
+  } else
+    return false; // don't allow to read without where clause
+  
+  // read from DB
+  db.transaction(function(tx) {
+    tx.executeSql("SELECT * FROM xcal WHERE xMonth = ?", data, function(tx,result) {
+      for(var i=0; i < result.rows.length; i++) { //console.log(result.rows.item(i));
+        // set result
+		var x = $.extend({}, xTemp);
+        x.xDate    = result.rows.item(i).xDate;
+        x.myX      = result.rows.item(i).myX == "TRUE" ? true : false;
+        x.smallX   = result.rows.item(i).smallX == "TRUE" ? true : false;
+		x.xMonth   = result.rows.item(i).xMonth;
+		x.xComment = result.rows.item(i).xComment;
+        xData.push(x);
+		addXToCal(x);
+      }
+	  if(callback !== false)
+        callback();
+    });
+  });
+}*/
+
+ /*
+  // SQLite
+  if(mode == 'ins') {
+	// set array of data for ? placeholder in correct order
+	var data = [
+	  x.xDate,
+	  x.myX === true ? "TRUE" : "FALSE",
+	  x.smallX === true ? "TRUE" : "FALSE",
+	  x.xMonth,
+	  x.xComment
+	];
+	// insert data to DB
+    db.transaction(function(tx) {
+	  tx.executeSql("INSERT INTO xcal (xDate, myX, smallX, xMonth, xComment) VALUES (?,?,?,?,?)", data, function(tx,res) {
+	    alert("Saved");    
+	  });
+    }, function(err){
+	  console.log(err);
+	  alert("An error occured while saving");
+    });
+	
+  } else if(mode == 'upd') {
+	// set array of data for ? placeholder in correct order
+	var data = [
+	  x.myX === true ? "TRUE" : "FALSE",
+	  x.smallX === true ? "TRUE" : "FALSE",
+	  x.xComment,
+	  x.xDate
+	];
+	// update to DB
+	db.transaction(function(tx) {
+	  tx.executeSql("UPDATE xcal SET myX = ?, smallX = ?, xComment = ? WHERE xDate = ?", data, function(tx,res) {
+	    alert("Updated");    
+	  });
+    }, function(err){
+	  console.log(err);
+	  alert("An error occured while deleting");
+    });
+	
+  } else if(mode == 'del') {
+	// set array of data for ? placeholder in correct order
+	var data = [
+	  x.xDate
+	];
+	// delete from DB
+	db.transaction(function(tx) {
+	  tx.executeSql("DELETE FROM xcal WHERE xDate = ?", data, function(tx,res) {
+	    // remove from X-Data array
+	    xData.splice(x, 1); 
+		alert("Deleted");    
+	  });
+    }, function(err){
+	  console.log(err);
+	  alert("An error occured while deleting");
+    });
+  }*/
+  
+  // SQLite
+  /*
+  if(drop)
+    var sql = "DROP TABLE IF EXISTS xcal";
+  else
+	var sql = "DELETE FROM xcal";
+  
+  db.transaction(function(tx) {
+	tx.executeSql(sql, [], function(tx, result) {
+	  $('section div.days').removeClass('myX');
+	  $('section div.days').removeClass('smallX');
+	  $('section div.days').children('div.inner').remove();
+	  // reset X-Data array
+      xData = [];
+	  //
+	  if(drop)
+	    alert("Table deleted! Please refresh page to reinitialize DB and table!");
+	});
+  }, function(err){
+	console.log(err);
+	alert("An error occurred while deleting the table");
+  });*/
+  
+  // SQLite: read from DB
+  /*
+  db.transaction(function(tx) {
+    tx.executeSql("SELECT * FROM xcal ORDER BY xDate ASC", [], function(tx,result) {
+      for(var i=0; i < result.rows.length; i++) { //console.log(result.rows.item(i));
+        var myX    = false;
+	    var smallX = false;
+		// count scores
+		if(result.rows.item(i).myX == "TRUE") {
+		  score.allTot++;        // total score: 1 for X, 0.5 for small X
+		  score.xTot++;          // amount of Xs
+		  if(result.rows.item(i).xMonth == month) {
+		    score.monTot++;      // month score..
+			score.monXTot++;     // amount of month's Xs
+		  }
+		  myX = true;
+		}
+	    else if(result.rows.item(i).smallX == "TRUE") {
+		  score.allTot += 0.5;   // total score: 1 for X, 0.5 for small X
+		  score.sxTot++;         // amount of small Xs
+		  if(result.rows.item(i).xMonth == month) {
+		    score.monTot += 0.5; // month score..
+			score.monSXTot++;    // amount of month's small Xs
+		  }
+		  smallX = true;
+		}
+		// check for "X spree" - how many X are adjacent dates
+		if(myX || smallX) {
+		  if(dateBefore == 0) {
+			spreeTemp = 1;    // first "any" X
+			if(myX)
+			  spreeTempX = 1; // first big X
+		  }
+		  else {
+		    var year = parseInt( result.rows.item(i).xDate.substr(0,4) );
+			var mon  = parseInt( result.rows.item(i).xDate.substr(4,2) );
+			var day  = parseInt( result.rows.item(i).xDate.substr(6,2) );
+			// subtract 1 day from current date to check with dateBefore
+			if(day == 1) {
+			  var dPrev = getLastDayPrevMonth(year,mon-1); // date object has month 0 = Jan etc.
+			  day = dPrev.getDate();
+			}
+			else
+			  day--;
+		    var dateNow = parseInt( ''+year+numbXDigit(mon)+numbXDigit(day) );
+			// check if dates are adjacent
+			if(dateNow == dateBefore) {
+			  spreeTemp++;    // increase "any" X spree
+			  if(myX)
+			    spreeTempX++; // increase big X spree
+			  else if(spreeTempX > 0) {
+				// restart big X spree because smallX doesn't count
+				if(score.xSpree <= spreeTempX) {
+				  score.xSpree  = spreeTempX;
+				  score.xSprMon = months[mon-1].name +" "+ year;
+				}
+			    spreeTempX = 0;
+			  }
+			}
+		    else {
+			  if(score.xsSpree <= spreeTemp) {
+				score.xsSpree  = spreeTemp;
+				score.xsSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
+			  }
+			  if(score.xSpree <= spreeTempX) {
+				score.xSpree = spreeTempX;
+				score.xSprMon = months[parseInt( String(dateBefore).substr(4,2) )-1].name +" "+ String(dateBefore).substr(0,4);
+			  }
+			  spreeTemp = 1;  // restart "any" X spree with first X
+			  spreeTempX = 1; // restart big X spree with first X
+			}
+		  }
+		}
+		dateBefore = parseInt( result.rows.item(i).xDate );
+      }
+	  // return certain score or score object
+	  if(what == '')
+		callback(score);
+	  else { 
+		if(score.hasOwnProperty(what))
+		  callback(score[what]);
+		else
+		  callback(0);
+	  }
+    });
+  });*/
